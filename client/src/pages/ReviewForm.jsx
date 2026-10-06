@@ -12,14 +12,19 @@ export default function ReviewForm() {
 
   useEffect(() => {
     if (!id) return
+
     api.get(`/reviews/${id}`)
       .then((res) => {
-        const { courseCode, rating, comment } = res.data
-        setForm({
-          courseCode: courseCode || '',
-          rating: Number(rating) || 5,
-          comment: comment || '',
-        })
+        // Unwraps response whether the backend returns res.data directly or nested inside res.data.review / res.data.data
+        const review = res.data?.review || res.data?.data || res.data
+
+        if (review) {
+          setForm({
+            courseCode: review.courseCode || '',
+            rating: Number(review.rating) || 5,
+            comment: review.comment || '',
+          })
+        }
       })
       .catch((err) => {
         setError(err.response?.data?.message || 'Failed to fetch review')
