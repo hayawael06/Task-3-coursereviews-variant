@@ -17,12 +17,27 @@ export default function ReviewForm() {
   // TODO (edit mode): when there is an `id`, load the review and fill the form.
   useEffect(() => {
     if (!id) return
-    // TODO
+    api.get(`/reviews/${id}`)
+      .then((res) => {
+        const { courseCode, rating, comment } = res.data
+        setForm({
+          courseCode: courseCode || '',
+          rating: Number(rating) || 5,
+          comment: comment || '',
+        })
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || 'Failed to fetch review')
+      })
   }, [id])
 
   // TODO: update `form` when an input changes (rating should be a number).
   function onChange(e) {
-    // TODO
+   const { name, value } = e.target
+    setForm((prev) => ({
+      ...prev,
+      [name]: name === 'rating' ? Number(value) : value,
+    }))
   }
 
   // TODO: POST a new review, or PATCH the existing one when editing,
@@ -30,7 +45,16 @@ export default function ReviewForm() {
   async function onSubmit(e) {
     e.preventDefault()
     setError('')
-    // TODO
+    try {
+      if (id) {
+        await api.patch(`/reviews/${id}`, form)
+      } else {
+        await api.post('/reviews', form)
+      }
+      nav('/reviews')
+    } catch (err) {
+      setError(err.response?.data?.message || 'An error occurred while saving')
+    }
   }
 
   return (
